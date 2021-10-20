@@ -54,12 +54,16 @@ public:
         }
     }
     int_fast64_t operator()(int_fast64_t n) {
+        if (n == 0) return 0;
         unsigned long first_significant_bit = 0;
         _BitScanReverse64(&first_significant_bit, n);
         unsigned long second_significant_bit = 0;
-        int_fast64_t test1 = n & (~(int_fast64_t(1) << first_significant_bit));
-        int_fast64_t test2 = n - (int_fast64_t(1) << first_significant_bit);
-        _BitScanReverse64(&second_significant_bit, n & (~(int_fast64_t(1) << first_significant_bit)));
+        int_fast64_t removed_bit = n & (~(int_fast64_t(1) << first_significant_bit));
+        //int_fast64_t removed_bit = n - (int_fast64_t(1) << first_significant_bit);
+        if (removed_bit) {
+            _BitScanReverse64(&second_significant_bit, removed_bit);
+            ++second_significant_bit;
+        }
         return result[first_significant_bit][second_significant_bit];
     }
 };
@@ -221,7 +225,7 @@ void sum_and_subtraction_optimized(int_fast64_t number) {
     int_fast64_t sum = ((starting_sum + 1) - number) - number;//= starting_sum + B * B - number*number;
     /*uint_fast64_t max_iterations = 0;*/
     if (sum == 0) std::cout << "(" << starting_number << "," << B << "," << number << ") ";
-    for (int_fast64_t A = (starting_number + 1)*2-1; (A+1)/2 <= number / sqrt_2; A+=2) {
+    for (int_fast64_t A = (starting_number + 1)*2-1; (A+1)/2 <= number / sqrt_2;) {
         sum += A;
         /*uint_fast64_t iterations = 0;*/
         if (sum > 0 && B > 0) {
@@ -236,6 +240,8 @@ void sum_and_subtraction_optimized(int_fast64_t number) {
             else
                 std::cout << "Error!\n\r";
         }
+
+        A += 2;
     }
     std::cout << "sum_and_subtraction_optimized out\n\r";
     /*std::cout << "max iterations = " << max_iterations << "\n\r";*/
@@ -249,7 +255,7 @@ void sum_and_subtraction(int_fast64_t number) {
     int_fast64_t sum = ((starting_sum + 1) - number) - number;//= starting_sum + B * B - number*number;
     /*uint_fast64_t max_iterations = 0;*/
     if (sum == 0) std::cout << "(" << starting_number << "," << B << "," << number << ") ";
-    for (int_fast64_t A = starting_number + 1; A <= number / sqrt_2; ++A) {
+    for (int_fast64_t A = starting_number + 1; A <= number / sqrt_2;) {
         sum += A * 2 - 1;
 
         /*uint_fast64_t iterations = 0;*/
@@ -260,11 +266,14 @@ void sum_and_subtraction(int_fast64_t number) {
         /*if (iterations > max_iterations) max_iterations = iterations;*/
 
         if (sum == 0) {
-            if (A * A + B * B == hypothenuse_squared)
+            if (A * A + B * B == hypothenuse_squared) { //overflow
                 std::cout << "(" << A << "," << B << "," << number << ") ";
+            }
             else
                 std::cout << "Error!\n\r";
         }
+
+        ++A;
     }
     std::cout << "sum_and_subtraction out\n\r";
     /*std::cout << "max iterations = " << max_iterations << "\n\r";*/
@@ -301,7 +310,7 @@ void find_next_A(int_fast64_t& A, int_fast64_t& sum, const FindNextA& find_type,
         else {
             auto division=[=](int_fast64_t a, int_fast64_t b)->int_fast64_t{
                 if (approx == Approx::floor) return a / b;
-                else if (approx == Approx::ceil) return a / b + (a % b);
+                else if (approx == Approx::ceil) return a / b + ((a % b)!=0);
             };
 
             int_fast64_t temp = division(-sum, 2 * A - 1);
@@ -309,7 +318,7 @@ void find_next_A(int_fast64_t& A, int_fast64_t& sum, const FindNextA& find_type,
             else {
                 int_fast64_t y = 2 * (temp + A) - 1;
                 int_fast64_t temp2 = division(-sum, y); //approx (x*sqrt(2)+y)/(1+sqrt(2)) -> (x*19+y*13)/32
-                temp2 = temp;//temp = (temp * 19 + temp2 * 13) / 32;
+                temp = temp2;//temp = (temp * 19 + temp2 * 13) / 32;
             }
 
             sum += temp * (2 * A + temp);
@@ -323,12 +332,12 @@ void sum_and_subtraction_jump(int_fast64_t number, FindNextA method, Approx appr
     const int_fast64_t starting_sum = starting_number * starting_number;
     int_fast64_t hypothenuse_squared = number * number;
     int_fast64_t B = number - 1;
-    int_fast64_t sum = ((starting_sum + 1) - number) - number;//= starting_sum + B * B - number*number;
+    int_fast64_t sum = ((starting_sum + 1) - number) - number;//= starting_sum * starting_sum  + B * B - number*number;
     /*uint_fast64_t max_iterations = 0;*/
     if (sum == 0) std::cout << "(" << starting_number << "," << B << "," << number << ") ";
     for (int_fast64_t A = starting_number; A <= number / sqrt_2;) {
 
-        find_next_A(A, sum, method, approx);        
+        find_next_A(A, sum, method, approx);
 
         /*uint_fast64_t iterations = 0;*/
         if (sum > 0 && B > 0) {
@@ -338,11 +347,16 @@ void sum_and_subtraction_jump(int_fast64_t number, FindNextA method, Approx appr
         /*if (iterations > max_iterations) max_iterations = iterations;*/
 
         if (sum == 0 && A <= number / sqrt_2) {
-            if (A * A + B * B == hypothenuse_squared)
+            if (A * A + B * B == hypothenuse_squared) { //overflow
                 std::cout << "(" << A << "," << B << "," << number << ") ";
+            }
             else
                 std::cout << "Error!\n\r";
         }
+
+        //sum += 2 * A + 1; //TODO sum goes positive -> breaks find_next_A
+        //++A;
+
     }
     std::cout << "sum_and_subtraction_jump out\n\r";
     /*std::cout << "max iterations = " << max_iterations << "\n\r";*/
@@ -362,13 +376,13 @@ int main()
     fast_ceil_sqrt_int sqrt_int;
     fast_ceil_sqrt_double sqrt_double;
     
-    for (int_fast64_t i =64; i < 129; ++i) {
+    for (int_fast64_t i = 64; i < 129; ++i) {
         int_fast64_t real= std::ceil(std::sqrt(i));
         int_fast64_t low_high = sqrt_low_high(i);
         int_fast64_t low = sqrt_low(i);
         int_fast64_t high = sqrt_high(i);
         int_fast64_t int_ = sqrt_int(i);
-        int_fast64_t double_= sqrt_double(i);
+        int_fast64_t double_ = sqrt_double(i);
         std::cout << "Sqrt of " << i << " real result = " << real << " ";
         std::cout << "low_high result = " << low_high << " ";
         std::cout << "low result = " << low << " ";
@@ -377,40 +391,40 @@ int main()
         std::cout << "double_ result = " << double_ << "\n\r";
     }
 
-    std::string pb_type_string = "";
-    while (problem_type == ProblemType::Undefined) {
-        std::cout << "Cathetus or Hypothenuse? c/h ";
-        std::cin >> pb_type_string;
-        if (pb_type_string.length() > 0) {
-            if (pb_type_string[0] == 'c' || pb_type_string[0] == 'C')
-                problem_type = ProblemType::Cathetus;
-            else if (pb_type_string[0] == 'h' || pb_type_string[0] == 'H')
-                problem_type = ProblemType::Hypothenuse;
-        }
-    }
+    //std::string pb_type_string = "";
+    //while (problem_type == ProblemType::Undefined) {
+    //    std::cout << "Cathetus or Hypothenuse? c/h ";
+    //    std::cin >> pb_type_string;
+    //    if (pb_type_string.length() > 0) {
+    //        if (pb_type_string[0] == 'c' || pb_type_string[0] == 'C')
+    //            problem_type = ProblemType::Cathetus;
+    //        else if (pb_type_string[0] == 'h' || pb_type_string[0] == 'H')
+    //            problem_type = ProblemType::Hypothenuse;
+    //    }
+    //}
 
-    if (problem_type == ProblemType::Hypothenuse) std::cout << "Hypothenuse\n\r";
-    if (problem_type == ProblemType::Cathetus) std::cout << "Cathetus\n\r";
+    //if (problem_type == ProblemType::Hypothenuse) std::cout << "Hypothenuse\n\r";
+    //if (problem_type == ProblemType::Cathetus) std::cout << "Cathetus\n\r";
 
-    std::cout << "Enter an integer ";
-    int_fast64_t number = 0;
-    std::cin >> number;
-    std::cout << "trying with " << number << "\n\r";
-    //if (number> std::numeric_limits<int_fast64_t>::min())
-    number = 66000001;// (2llu << 30) - 5;
-    std::cout << "trying with " << number << "\n\r";
+    //std::cout << "Enter an integer ";
+    //int_fast64_t number = 0;
+    //std::cin >> number;
+    //std::cout << "trying with " << number << "\n\r";
+    ////if (number> std::numeric_limits<int_fast64_t>::min())
+    //number = 66000001;// (2llu << 30) - 5;
+    //std::cout << "trying with " << number << "\n\r";
 
-    if (problem_type == ProblemType::Hypothenuse) {
-        sum_and_subtraction(number);
-        sum_and_subtraction_optimized(number);
-        sum_and_subtraction_jump(number, FindNextA::multiplication_1, Approx::floor);
-    }
+    //if (problem_type == ProblemType::Hypothenuse) {
+    //    sum_and_subtraction(number);
+    //    sum_and_subtraction_optimized(number);
+    //    sum_and_subtraction_jump(number, FindNextA::multiplication_1, Approx::floor);
+    //}
 
     sum_and_subtraction(13);
     sum_and_subtraction_optimized(13);
-    sum_and_subtraction_jump(13, FindNextA::multiplication_1, Approx::floor);
+    sum_and_subtraction_jump(13, FindNextA::square_root_1, Approx::ceil);
 
     sum_and_subtraction(26);
     sum_and_subtraction_optimized(26);
-    sum_and_subtraction_jump(26, FindNextA::multiplication_1, Approx::floor);
+    sum_and_subtraction_jump(26, FindNextA::multiplication_1, Approx::ceil);
 }
