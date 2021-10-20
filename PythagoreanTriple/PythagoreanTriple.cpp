@@ -235,7 +235,10 @@ void sum_and_subtraction_optimized(int_fast64_t number) {
         /*if (iterations > max_iterations) max_iterations = iterations;*/
 
         if (sum == 0) {
-            if (((A+1)/2) * ((A+1)/2) + B * B == hypothenuse_squared)
+            uint_fast64_t a_ = (A + 1) / 2;
+            uint_fast64_t b_ = B;
+            uint_fast64_t c_ = number;
+            if (a_ * a_ + b_ * b_ == c_ * c_) 
                 std::cout << "(" << (A + 1) / 2 << "," << B << "," << number << ") ";
             else
                 std::cout << "Error!\n\r";
@@ -266,7 +269,10 @@ void sum_and_subtraction(int_fast64_t number) {
         /*if (iterations > max_iterations) max_iterations = iterations;*/
 
         if (sum == 0) {
-            if (A * A + B * B == hypothenuse_squared) { //overflow
+            uint_fast64_t a_ = A;
+            uint_fast64_t b_ = B;
+            uint_fast64_t c_ = number;
+            if (a_ * a_ + b_ * b_ == c_ * c_) {
                 std::cout << "(" << A << "," << B << "," << number << ") ";
             }
             else
@@ -347,15 +353,19 @@ void sum_and_subtraction_jump(int_fast64_t number, FindNextA method, Approx appr
         /*if (iterations > max_iterations) max_iterations = iterations;*/
 
         if (sum == 0 && A <= number / sqrt_2) {
-            if (A * A + B * B == hypothenuse_squared) { //overflow
+            uint_fast64_t a_ = A;
+            uint_fast64_t b_ = B;
+            uint_fast64_t c_ = number;
+            if (a_ * a_ + b_ * b_ == c_*c_) { 
                 std::cout << "(" << A << "," << B << "," << number << ") ";
             }
             else
                 std::cout << "Error!\n\r";
-        }
+            sum -= --B * 2 + 1;
+            sum += 2 * A + 1;
+            ++A;
 
-        //sum += 2 * A + 1; //TODO sum goes positive -> breaks find_next_A
-        //++A;
+        }
 
     }
     std::cout << "sum_and_subtraction_jump out\n\r";
@@ -424,7 +434,7 @@ int main()
     sum_and_subtraction_optimized(13);
     sum_and_subtraction_jump(13, FindNextA::square_root_1, Approx::ceil);
 
-    sum_and_subtraction(26);
-    sum_and_subtraction_optimized(26);
-    sum_and_subtraction_jump(26, FindNextA::multiplication_1, Approx::ceil);
+    sum_and_subtraction(26111111);
+    sum_and_subtraction_optimized(26111111);
+    sum_and_subtraction_jump(26111111, FindNextA::multiplication_1, Approx::ceil);
 }
