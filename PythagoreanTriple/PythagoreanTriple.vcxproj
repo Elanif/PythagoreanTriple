@@ -121,6 +121,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <StackReserveSize>
+      </StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -138,6 +140,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <StackReserveSize>
+      </StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -145,6 +149,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.hpp" />
+    <ClInclude Include="FactoringAlgorithms.hpp" />
+    <ClInclude Include="IterativePythagoreanFinders.hpp" />
+    <ClInclude Include="random.hpp" />
     <ClInclude Include="SqrtApproximator.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

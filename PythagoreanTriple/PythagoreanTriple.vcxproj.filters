@@ -26,5 +26,14 @@
     <ClInclude Include="Constants.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IterativePythagoreanFinders.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FactoringAlgorithms.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="random.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
